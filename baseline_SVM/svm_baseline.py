@@ -44,8 +44,8 @@ with open(train_metadata_path, 'r') as f:
         y, sr = librosa.load(wav_path, sr=16000)
         
         # MFCC(Mel-frequency cepstral coefficients) 추출
-        # 인간의 청각 특성을 반영한 주요 음성 특징 (20차원)
-        mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
+        # 인간의 청각 특성을 반영한 주요 음성 특징 (17차원)
+        mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=17) # n_mfcc=17으로 변경
         
         # Delta 특징: MFCC의 1차 미분 (시간에 따른 변화율)
         # 음성의 동적 특성을 캡처
@@ -58,18 +58,18 @@ with open(train_metadata_path, 'r') as f:
         # ===== 통계적 특징 계산 =====
         # 각 특징의 시간축에 대한 평균과 표준편차 계산
         # 가변 길이의 음성을 고정 길이 특징 벡터로 변환
-        mfcc_mean = np.mean(mfcc, axis=1)          # MFCC 평균 (20차원)
-        mfcc_std = np.std(mfcc, axis=1)            # MFCC 표준편차 (20차원)
-        mfcc_delta_mean = np.mean(mfcc_delta, axis=1)      # Delta 평균 (20차원)
-        mfcc_delta_std = np.std(mfcc_delta, axis=1)        # Delta 표준편차 (20차원)
-        mfcc_delta2_mean = np.mean(mfcc_delta2, axis=1)    # Delta-Delta 평균 (20차원)
-        mfcc_delta2_std = np.std(mfcc_delta2, axis=1)      # Delta-Delta 표준편차 (20차원)
+        mfcc_mean = np.mean(mfcc, axis=1)          # MFCC 평균 (17차원)
+        mfcc_std = np.std(mfcc, axis=1)            # MFCC 표준편차 (17차원)
+        mfcc_delta_mean = np.mean(mfcc_delta, axis=1)      # Delta 평균 (17차원)
+        mfcc_delta_std = np.std(mfcc_delta, axis=1)        # Delta 표준편차 (17차원)
+        mfcc_delta2_mean = np.mean(mfcc_delta2, axis=1)    # Delta-Delta 평균 (17차원)
+        mfcc_delta2_std = np.std(mfcc_delta2, axis=1)      # Delta-Delta 표준편차 (17차원)
 
-        # 모든 통계적 특징을 하나의 벡터로 결합 (총 120차원)
+        # 모든 통계적 특징을 하나의 벡터로 결합 (총 17 * 2 * 3 = 102차원)
         features = np.concatenate([
-            mfcc_mean, mfcc_std,           # 40차원
-            mfcc_delta_mean, mfcc_delta_std,   # 40차원
-            mfcc_delta2_mean, mfcc_delta2_std  # 40차원
+            mfcc_mean, mfcc_std,           # 34차원
+            mfcc_delta_mean, mfcc_delta_std,   # 34차원
+            mfcc_delta2_mean, mfcc_delta2_std  # 34차원
         ])
 
         # 특징 벡터와 라벨을 리스트에 추가
@@ -145,8 +145,8 @@ with open(test_metadata_path, 'r') as f:
         wav_path = os.path.join(test_data_path, file_name)
 
         # 훈련 데이터와 동일한 특징 추출 과정
-        y, sr = librosa.load(wav_path, sr=16000)
-        mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=20)
+        y, sr = librosa.load(wav_path, sr=12000)
+        mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=17) # n_mfcc=17으로 변경
         mfcc_delta = librosa.feature.delta(mfcc)
         mfcc_delta2 = librosa.feature.delta(mfcc, order=2)
 
@@ -158,7 +158,7 @@ with open(test_metadata_path, 'r') as f:
         mfcc_delta2_mean = np.mean(mfcc_delta2, axis=1)
         mfcc_delta2_std = np.std(mfcc_delta2, axis=1)
 
-        # 특징 벡터 결합
+        # 특징 벡터 결합 (총 17 * 2 * 3 = 102차원)
         features = np.concatenate([
             mfcc_mean, mfcc_std,
             mfcc_delta_mean, mfcc_delta_std,
